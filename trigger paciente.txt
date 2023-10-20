@@ -1,0 +1,33 @@
+
+alter TRIGGER dbo.actualiza_cliente
+   ON  [dbo].[paciente]
+   AFTER UPDATE
+AS 
+BEGIN
+	
+	SET NOCOUNT ON;
+
+	declare @idpaciente int
+    
+	begin try
+	
+	select @idpaciente = inserted.IdPaciente from inserted
+
+	if (select count(*) from paciente where IdPaciente=@idpaciente)=0
+	begin 
+		RAISERROR('El paciente no existe',16,1)
+	end
+	else
+	begin
+		INSERT INTO [dbo].[movimiento]([TipoMovimiento],[IdPaciente],[Fecha],[Hora],[DatoAnterior],[DatoActual])
+		VALUES  (2,@idpaciente, getdate(),  getdate(), '', '')
+	end
+
+	end try
+
+	begin catch
+
+	end catch
+END
+
+
